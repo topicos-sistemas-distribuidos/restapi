@@ -15,8 +15,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import br.ufc.great.es.api.demo.exceptions.ServiceException;
 import br.ufc.great.es.api.demo.model.Users;
 import br.ufc.great.es.api.demo.service.UsersService;
 import br.ufc.great.es.api.demo.utils.GeradorSenha;
@@ -61,12 +63,21 @@ public class UserController {
      * Dado um id retorna o JSON dos dados do usuario
      * @param id
      * @return código http
+     * @throws ServiceException 
      */
     @GET
     @Produces("application/json")
     @Path("/{id}")
-    public Users getUser(@PathParam("id") String id) {
-    	return userService.get(Long.parseLong(id));
+    public Users getUser(@PathParam("id") String id) throws ServiceException{    	
+    	Users user = null; 
+
+    	user = userService.get(Long.parseLong(id));
+    	
+    	if (user==null) {
+    		throw new ServiceException(HttpStatus.NOT_FOUND.value(), "Usuário não existe!", 1);
+    	}
+
+    	return (user);
     }
     
     /**
@@ -75,14 +86,21 @@ public class UserController {
      * @return código http
      * 
      * curl -v --header "Content-Type: application/json" --request POST --data '{"username":"novousuario", "password":"novousuario"}' http://localhost:8083/demo/users
+     * @throws ServiceException 
      * 
      */
     @POST
     @Produces("application/json")
     @Consumes("application/json")
-    public Response addUser(Users user) {
+    public Response addUser(Users user) throws ServiceException {
     	
     	String senhaCriptografada;
+    	Users userAux = userService.getUserByUserName(user.getUsername()); 
+    	
+    	//checa se o usuário já existe
+    	if (userAux != null) {
+    		throw new ServiceException(HttpStatus.BAD_REQUEST.value(), "Usuário já existe!", 1);
+    	}
     	
     	if (user.getPassword().length() > 1){
         	senhaCriptografada = new GeradorSenha().criptografa(user.getPassword());
@@ -90,11 +108,9 @@ public class UserController {
             userService.save(user);
             URI uri = URI.create("/" + String.valueOf(user.getId()));
             return Response.created(uri).build();
+    	}else{
+    		throw new ServiceException(HttpStatus.BAD_REQUEST.value(), "Informe uma senha para o usuário", 1);
     	}
-    	
-    	URI uri2 = URI.create("/"); 
-    	
-    	return Response.created(uri2).build();
     }
     
     /**
@@ -102,25 +118,39 @@ public class UserController {
      * @param id
      * @param user
      * @return código http
+     * @throws ServiceException 
      */
     @PUT
     @Consumes("application/json")
     @Path("/{id}")
-    public Response updateUser(@PathParam("id") String id, Users user) {
-       userService.save(user);
-       return Response.noContent().build();
-    }
+    public Response updateUser(@PathParam("id") String id, Users user) throws ServiceException {
+    	Users userAux = null; 
+    	userAux = userService.get(Long.parseLong(id));
 
+    	if (userAux==null) {
+    		throw new ServiceException(HttpStatus.NOT_FOUND.value(), "Usuário não existe!", 1);
+    	}	
+
+    	userService.save(user);
+    	return Response.noContent().build();
+    }
 
     /**
      * Dado um id de um usuario faz sua remocao do repositorio
      * @param id
      * @return código http
+     * @throws ServiceException 
      */
     @DELETE
     @Path("/{id}")
-    public Response deleteUser(@PathParam("id") String id) {
-        userService.delete(Long.parseLong(id));
+    public Response deleteUser(@PathParam("id") String id) throws ServiceException{
+    	Users user = userService.get(Long.parseLong(id));
+    	
+    	if (user == null){
+    		throw new ServiceException(HttpStatus.NOT_FOUND.value(), "Usuário " + id + " não existe!",1);
+    	}
+
+    	userService.delete(Long.parseLong(id));
         return Response.ok().build();
     }
     
@@ -128,11 +158,12 @@ public class UserController {
      * Dado email e senha retorna o JSON dos dados do usuario
      * @param 
      * @return código http
+     * @throws ServiceException 
      */
     @GET
     @Produces("application/json")
     @Path("/{email}/{senha}")
-    public Object getUserAutenticado(@PathParam("email") String email,@PathParam("senha") String senha) {
+    public Object getUserAutenticado(@PathParam("email") String email,@PathParam("senha") String senha) throws ServiceException {
     	Users user = userService.getUserByEmail(email);
     	Message message = new Message();
     	
@@ -145,12 +176,9 @@ public class UserController {
         		message.setId(1);
         		message.setConteudo("Senha incorreta!");
                 return message;	    		
-        	}    	
-    		
+        	}    	    		
     	}else {
-    		message.setId(2);
-    		message.setConteudo("Usuário não existe!");
-    		return message;
+    		throw new ServiceException(HttpStatus.NOT_FOUND.value(), "Usuário não existe!",1);
     	}    	
     }
 
@@ -159,15 +187,19 @@ public class UserController {
      * @param idUser
      * @param idFriend
      * @return
+     * @throws ServiceException 
      */
     @GET
     @Produces("application/json")
     @Path(value = "/{idUser}/add/friend/{idFriend}")
-    public Object addFriend(@PathParam("idUser") long idUser, @PathParam("idFriend") long idFriend) {
+    public Object addFriend(@PathParam("idUser") long idUser, @PathParam("idFriend") long idFriend) throws ServiceException {
     	Message message = new Message();
     	
     	Users user = this.userService.get(idUser);
     	Users friend = this.userService.get(idFriend);
+    	
+    	//checa se user e friend existem 
+    	checkUsers(user, friend);
     	
     	if (user.addIdFriend(friend)) {
     		this.userService.save(user);
@@ -189,13 +221,19 @@ public class UserController {
      * @param idUser
      * @param model
      * @return
+     * @throws ServiceException 
      */
     @GET
     @Produces("application/json")
     @Path(value = "/{idUser}/list/friends")
-    public List<Users> listFriends(@PathParam("idUser") long idUser) {    
+    public List<Users> listFriends(@PathParam("idUser") long idUser) throws ServiceException {    
 
 		Users user = this.userService.get(idUser);
+		
+		if (user == null) {
+			throw new ServiceException(HttpStatus.NOT_FOUND.value(), "Usuário não existe!",1);
+		}
+		
 		List<Users> idFriends = user.getIdFriendsList();
 		
 		List<Users> listaAmigos = new LinkedList<Users>();
@@ -214,15 +252,19 @@ public class UserController {
      * @param model
      * @param ra
      * @return
+     * @throws ServiceException 
      */
     @GET
     @Produces("application/json")
     @Path(value = "/{idUser}/delete/friend/{idFriend}")
-    public Object deleteFriend(@PathParam("idUser") long idUser, @PathParam("idFriend") long idFriend) {
+    public Object deleteFriend(@PathParam("idUser") long idUser, @PathParam("idFriend") long idFriend) throws ServiceException {
     	Message message = new Message();
     	
     	Users user = this.userService.get(idUser);
     	Users friend = this.userService.get(idFriend);
+    	
+    	//checa se user e friend existem 
+    	checkUsers(user, friend);
     	
     	if (user.deleteFriend(friend)) {        	 
         	this.userService.save(user);
@@ -238,5 +280,29 @@ public class UserController {
     	
     	return message;
     }
+ 
+    /**
+     * Checa a validade de usuário e amigo
+     * @param user
+     * @param friend
+     * @throws ServiceException
+     */
+	private void checkUsers(Users user, Users friend) throws ServiceException {
+		if (user == null) {
+    		if (friend == null) {
+    			throw new ServiceException(HttpStatus.NOT_FOUND.value(), "Usuário e amigo não existem!",2);
+    		}else {
+    			throw new ServiceException(HttpStatus.NOT_FOUND.value(), "Usuário não existe!",1);
+    		}    		
+    	}else {
+    		if (friend == null) {
+    			throw new ServiceException(HttpStatus.NOT_FOUND.value(), "Usuário amigo não existe!",2);
+    		}else{
+    			if (user.getId() == friend.getId()) {
+    				throw new ServiceException(HttpStatus.NOT_FOUND.value(), "Usuário não pode ser amigo dele mesmo",3);
+    			}
+    		}
+    	}
+	}
     
 }

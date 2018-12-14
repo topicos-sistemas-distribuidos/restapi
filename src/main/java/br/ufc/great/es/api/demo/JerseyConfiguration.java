@@ -7,6 +7,8 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.context.annotation.Configuration;
 
 import br.ufc.great.es.api.demo.controller.UserController;
+import br.ufc.great.es.api.demo.exceptions.GenericExceptionMapper;
+import br.ufc.great.es.api.demo.exceptions.ServiceExceptionMapper;
 
 /**
  * Faz a configuracao do Servico Jersey
@@ -25,5 +27,7 @@ public class JerseyConfiguration extends ResourceConfig {
 	@PostConstruct
 	public void setUp() {		
 		register(UserController.class);
+		register(ServiceExceptionMapper.class);
+        register(GenericExceptionMapper.class);
 	}
 }
