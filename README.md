@@ -1,6 +1,61 @@
 # restapi
 Serviço demo Rest API. 
 
+Estrutura geral da aplicação
+
+app <br/>
+|-Application (1) <br/>
+|-JerseyConfiguration (2) <br/>
+|-exception (3) <br/>
+	--GenericExceptionMapper <br/>
+|-model (4) <br/>
+	--User <br/>
+	--AbstractModel <br/>
+|-repository (5) <br/>
+	--UserRepository <br/>
+|-service (6) <br/>
+	--UserService <br/>
+	--AbstractService <br/>
+|-controller (7) <br/>
+	--UserController <br/>
+|-security (8) <br/>
+	--WebSecurityConfig <br/>
+	--autentication <br/>
+		---AuthenticationEntryPoint <br/>
+|-utils (9) <br/>
+<br/>
+<br>
+pom.xml <br/> 
+|-spring-boot-starter-undertow <br/>
+|-spring-boot-starter-jersey <br/>
+|-spring-boot-starter-data-rest <br/>
+|-spring-boot-starter-data-jpa <br/>
+|-spring-boot-starter-security <br/>
+|-spring-security-test <br/>
+|-spring-boot-starter-test <br/>
+|-mysql-connector-java <br/>
+<br/>
+<br/>
+1)Criada uma aplicação Spring boot padrão.
+
+2)Criada a classe JerseyConfiguration para registrar os controladores.
+
+3)Criado o GenericExceptionMapper para mapear as exceções encontradas durante as requisições.
+
+4)Criada a classe base modelo
+
+5)Criada a interface Repository que funcionará como o repositório da classe modelo
+
+6)Criada a classe Service que funcionará como um serviço que vai manipular os dados do repositório
+
+7)Criada a classe Controller que será o controlador com as funcionalidades que irão manipular o domínio do modelo
+
+8)Configuração da segurança da aplicação <br/>
+a)Criada a classe WebSecurityConfig que será responsável pelo controle de acesso as requisições da aplicação. <br/>
+b)Criada a classe AuthenticationEntryPoint para implementar a autenticação básica via controle de cabeçalho passando uma chave de acesso nas requisições. <br/>
+
+9) Classes utilitárias para apoiar a aplicação
+
 Features
 ---
 
