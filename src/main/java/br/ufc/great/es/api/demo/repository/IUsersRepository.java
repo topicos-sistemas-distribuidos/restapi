@@ -11,7 +11,7 @@ import br.ufc.great.es.api.demo.model.Users;
  *
  */
 @Repository
-public interface UsersRepository extends JpaRepository<Users, Long>{
+public interface IUsersRepository extends JpaRepository<Users, Long>{
 	Users findByUsername(String username);
 	Users findByEmail(String email);
 }
