@@ -93,13 +93,14 @@ $mvn spring-boot:run
 ```
 
 7. Exemplo de chamada de teste:
-
-curl --user armando:armando http://localhost:8083/demo/users/1
+```
+$curl --user armando:armando http://localhost:8083/demo/users/1
+```
 
 develove a seguinte resposta:
 
 ```json
-{"id":1,"username":"armando","password":"$2a$10$DN7O2a3TvO9M.lVHFZkOW.k395HX.OLNYE3dq2uXZ92P/2YwyXVM6","enabled":true,"email":"armando@ufpi.edu.br","latitude":0.0,"longitude":0.0,"roles":[{"nome":"ROLE_ADMIN","authority":"ROLE_ADMIN"}],"name":null,"amountOfFriends":1,"authorities":[{"nome":"ROLE_ADMIN","authority":"ROLE_ADMIN"}],"accountNonExpired":true,"accountNonLocked":true,"credentialsNonExpired":true}
+{"id":1,"username":"armando","password":"$2a$10$DN7O2a3TvO9M.lVHFZkOW.k395HX.OLNYE3dq2uXZ92P/2YwyXVM6","enabled":true,"email":"armando@ufpi.edu.br","latitude":0.0,"longitude":0.0,"roles":[{"nome":"ROLE_ADMIN","authority":"ROLE_ADMIN"}],"name":"Armando Soares Sousa,"amountOfFriends":1,"authorities":[{"nome":"ROLE_ADMIN","authority":"ROLE_ADMIN"}],"accountNonExpired":true,"accountNonLocked":true,"credentialsNonExpired":true}
 ```
 
 Referências
