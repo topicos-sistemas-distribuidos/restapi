@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import br.ufc.great.es.api.demo.security.authentication.AuthenticationEntryPoint;
+import br.ufc.great.es.api.demo.service.UsersService;
 
 @Configuration
 @EnableWebSecurity
@@ -20,6 +21,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 	
 	@Autowired
 	private AuthenticationEntryPoint authEntryPoint;
+	
+	@Autowired
+	private UsersService userService;
 	
 	@Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -49,7 +53,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
         String encrytedPassword = this.passwordEncoder().encode(password);
         System.out.println("Encoded password of armando=" + encrytedPassword);
          
-        InMemoryUserDetailsManagerConfigurer<AuthenticationManagerBuilder> mngConfig = auth.inMemoryAuthentication();
+        //InMemoryUserDetailsManagerConfigurer<AuthenticationManagerBuilder> mngConfig = auth.inMemoryAuthentication();
  
         // Defines 2 users, stored in memory.
         // ** Spring BOOT >= 2.x (Spring Security 5.x)
@@ -61,8 +65,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
  
         // If Spring BOOT < 2.x (Spring Security 4.x)):
         // Spring auto add ROLE_
-        mngConfig.withUser("armando").password("armando").roles("USER");
-        mngConfig.withUser("jerry").password("123").roles("USER");
+        //mngConfig.withUser("armando").password("armando").roles("USER");
+        //mngConfig.withUser("jerry").password("123").roles("USER");
+        
+        auth.userDetailsService(this.userService)
+        	.passwordEncoder(new BCryptPasswordEncoder());
     }
 	
 }
