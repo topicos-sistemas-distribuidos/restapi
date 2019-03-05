@@ -54,18 +54,13 @@ pom.xml <br/>
 a)Criada a classe WebSecurityConfig que será responsável pelo controle de acesso as requisições da aplicação. <br/>
 b)Criada a classe AuthenticationEntryPoint para implementar a autenticação básica via controle de cabeçalho passando uma chave de acesso nas requisições. <br/>
 
-9) Classes utilitárias para apoiar a aplicação
+9)Classes utilitárias para apoiar a aplicação
 
 Features
 ---
 
 * Serviços de CRUD para Usuários
 * Controle básico de autenticação
-
-TODO
---- 
-
-* Controle de permissão e perfil de usuários
 
 Sobre as operações para execução da aplicação
 ---
@@ -103,8 +98,9 @@ curl --user armando:armando http://localhost:8083/demo/users/1
 
 develove a seguinte resposta:
 
-{"id":1,"username":"armando","password":"$2a$10$DN7O2a3TvO9M.lVHFZkOW.k395HX.OLNYE3dq2uXZ92P/2YwyXVM6","enabled":false,"email":"armando@ufpi.edu.br","latitude":0.0,"longitude":0.0,"name":null,"amountOfFriends":1}
-
+```json
+{"id":1,"username":"armando","password":"$2a$10$DN7O2a3TvO9M.lVHFZkOW.k395HX.OLNYE3dq2uXZ92P/2YwyXVM6","enabled":true,"email":"armando@ufpi.edu.br","latitude":0.0,"longitude":0.0,"roles":[{"nome":"ROLE_ADMIN","authority":"ROLE_ADMIN"}],"name":null,"amountOfFriends":1,"authorities":[{"nome":"ROLE_ADMIN","authority":"ROLE_ADMIN"}],"accountNonExpired":true,"accountNonLocked":true,"credentialsNonExpired":true}
+```
 
 Referências
 ---
