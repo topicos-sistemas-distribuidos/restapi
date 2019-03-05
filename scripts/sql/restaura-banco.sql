@@ -16,6 +16,29 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `role`
+--
+
+DROP TABLE IF EXISTS `role`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `role` (
+  `nome` varchar(255) NOT NULL,
+  PRIMARY KEY (`nome`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `role`
+--
+
+LOCK TABLES `role` WRITE;
+/*!40000 ALTER TABLE `role` DISABLE KEYS */;
+INSERT INTO `role` VALUES ('ROLE_ADMIN');
+/*!40000 ALTER TABLE `role` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `users`
 --
 
@@ -41,7 +64,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'armando@ufpi.edu.br',0,0,0,NULL,'$2a$10$DN7O2a3TvO9M.lVHFZkOW.k395HX.OLNYE3dq2uXZ92P/2YwyXVM6','armando'),(2,NULL,0,0,0,NULL,'$2a$10$fja.mg5G8InUVwpzxWzThOh4FRPPX8Zpw0kz26jHtVght5RLHdGDW','maria');
+INSERT INTO `users` VALUES (1,'armando@ufpi.edu.br',1,0,0,NULL,'$2a$10$DN7O2a3TvO9M.lVHFZkOW.k395HX.OLNYE3dq2uXZ92P/2YwyXVM6','armando'),(2,NULL,0,0,0,NULL,'$2a$10$fja.mg5G8InUVwpzxWzThOh4FRPPX8Zpw0kz26jHtVght5RLHdGDW','maria');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -71,6 +94,33 @@ LOCK TABLES `users_id_friends_list` WRITE;
 INSERT INTO `users_id_friends_list` VALUES (1,2),(2,1);
 /*!40000 ALTER TABLE `users_id_friends_list` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `users_roles`
+--
+
+DROP TABLE IF EXISTS `users_roles`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `users_roles` (
+  `users_id` bigint(20) NOT NULL,
+  `roles_nome` varchar(255) NOT NULL,
+  UNIQUE KEY `UK_r184ht35uf9b6lx857pynpjj5` (`roles_nome`),
+  KEY `FKml90kef4w2jy7oxyqv742tsfc` (`users_id`),
+  CONSTRAINT `FKml90kef4w2jy7oxyqv742tsfc` FOREIGN KEY (`users_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `FKr6wm2mho76w0rs0svfdxmj517` FOREIGN KEY (`roles_nome`) REFERENCES `role` (`nome`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `users_roles`
+--
+
+LOCK TABLES `users_roles` WRITE;
+/*!40000 ALTER TABLE `users_roles` DISABLE KEYS */;
+INSERT INTO `users_roles` VALUES (1,'ROLE_ADMIN');
+/*!40000 ALTER TABLE `users_roles` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -81,4 +131,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-02-25 17:17:35
+-- Dump completed on 2019-03-05 18:18:55
