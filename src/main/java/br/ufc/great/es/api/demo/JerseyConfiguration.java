@@ -6,6 +6,7 @@ import javax.ws.rs.ApplicationPath;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.context.annotation.Configuration;
 
+import br.ufc.great.es.api.demo.controller.AccessControlController;
 import br.ufc.great.es.api.demo.controller.UserController;
 import br.ufc.great.es.api.demo.exceptions.GenericExceptionMapper;
 import br.ufc.great.es.api.demo.exceptions.ServiceExceptionMapper;
@@ -27,6 +28,7 @@ public class JerseyConfiguration extends ResourceConfig {
 	@PostConstruct
 	public void setUp() {		
 		register(UserController.class);
+		register(AccessControlController.class);
 		register(ServiceExceptionMapper.class);
         register(GenericExceptionMapper.class);
 	}

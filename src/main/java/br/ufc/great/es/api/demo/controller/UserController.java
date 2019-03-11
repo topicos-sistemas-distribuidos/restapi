@@ -19,7 +19,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import br.ufc.great.es.api.demo.exceptions.ServiceException;
+import br.ufc.great.es.api.demo.model.Role;
 import br.ufc.great.es.api.demo.model.Users;
+import br.ufc.great.es.api.demo.service.AuthoritiesService;
 import br.ufc.great.es.api.demo.service.UsersService;
 import br.ufc.great.es.api.demo.utils.GeradorSenha;
 import br.ufc.great.es.api.demo.utils.Message;
@@ -34,10 +36,16 @@ import br.ufc.great.es.api.demo.utils.Message;
 @Path("/users")
 public class UserController {
 	UsersService userService;
+	AuthoritiesService authoritiesService;
 	
 	@Autowired
 	public void setUserService(UsersService userServices){
 		this.userService = userServices;
+	}
+	
+	@Autowired
+	public void setAuthoritiesService(AuthoritiesService authoritiesService) {
+		this.authoritiesService = authoritiesService;
 	}
 		
 	/**
@@ -201,9 +209,9 @@ public class UserController {
     	//checa se user e friend existem 
     	checkUsers(user, friend);
     	
-    	if (user.addIdFriend(friend)) {
+    	if (user.addFriend(friend)) {
     		this.userService.save(user);
-    		if (friend.addIdFriend(user)){
+    		if (friend.addFriend(user)){
     			this.userService.save(friend);	
     		}    
     		message.setId(3);
@@ -214,35 +222,6 @@ public class UserController {
     	}
     	
     	return message;	
-    }
-    
-    /**
-     * Dado um usuário logado lista os amigos dele
-     * @param idUser
-     * @param model
-     * @return
-     * @throws ServiceException 
-     */
-    @GET
-    @Produces("application/json")
-    @Path(value = "/{idUser}/list/friends")
-    public List<Users> listFriends(@PathParam("idUser") long idUser) throws ServiceException {    
-
-		Users user = this.userService.get(idUser);
-		
-		if (user == null) {
-			throw new ServiceException(HttpStatus.NOT_FOUND.value(), "Usuário não existe!",1);
-		}
-		
-		List<Users> idFriends = user.getIdFriendsList();
-		
-		List<Users> listaAmigos = new LinkedList<Users>();
-		
-		for (Users id : idFriends) {
-			listaAmigos.add(this.userService.get(id.getId()));
-		}
-        
-        return listaAmigos;
     }
     
     /**
@@ -303,6 +282,127 @@ public class UserController {
     			}
     		}
     	}
+	}
+
+	/**
+	 * Verifica as permissões do usuário
+	 */
+	private void checkUser() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	 /**
+     * Dado um usuário logado lista os amigos dele
+     * @param idUser
+     * @param model
+     * @return
+     * @throws ServiceException 
+     */
+    @GET
+    @Produces("application/json")
+    @Path(value = "/{idUser}/list/friends")
+    public List<Users> listFriends(@PathParam("idUser") long idUser) throws ServiceException {    
+
+		Users user = this.userService.get(idUser);
+		
+		if (user == null) {
+			throw new ServiceException(HttpStatus.NOT_FOUND.value(), "Usuário não existe!",1);
+		}
+		
+		List<Users> idFriends = user.getFriendsList();
+		
+		List<Users> listaAmigos = new LinkedList<Users>();
+		
+		for (Users id : idFriends) {
+			listaAmigos.add(this.userService.get(id.getId()));
+		}
+        
+        return listaAmigos;
+    }
+	
+    /**
+     * Seleciona uma imagem de um usuario
+     * @param idUser id do usuario
+     * @param model
+     * @return um formulario para fazer o upload de uma imagem do perfil do usuario
+     */
+    @GET
+    @Produces("application/json")
+    @Path(value = "/{idUser}/select/image")
+	public String selectImage(@PathParam(value = "idUser") Long idUser){
+		Users editUser = userService.get(idUser);
+		checkUser();
+		//TODO select image
+        return "users/formImage";
+	}
+
+	/**
+	 * TODO é preciso zerar a sessão do usuário
+	 * Return registration form template
+	 * @param model
+	 * @param user novo usuario que sera registrado
+	 * @return formulario para registro de um novo usuario. Um novo usuario recebe a permissao padrao USER.
+	 */
+    @GET
+    @Produces("application/json")
+	@Path(value = "/register")
+	public String showRegistrationPage(){
+		//TODO fazer procedimento de registro de novo usuário		
+		return "/register";
+	}
+
+	//TODO Revisar a forma de registra das permissões do usuário
+    @GET
+    @Produces("appliaction/json")
+    @Consumes("application/json")
+	@Path(value = "/register")
+	public String processRegistrationForm(Users user, @PathParam("password") String password, 
+			@PathParam("confirmpassword") String confirmPassword, @PathParam("authority") String authority) {
+		
+		String username = user.getUsername();
+		Users userExists = this.userService.getUserByUserName(username);
+		
+		if (userExists != null) {			
+			//TODO ("msgerro", "Usuário já existe!");
+			return "redirect:/register";
+		}else {	
+			//checa a senha do usuário 			
+			if (password.equals(confirmPassword)) {
+			  	String senhaCriptografada = new GeradorSenha().criptografa(password);
+
+			  	user.setPassword(senhaCriptografada);
+				user.setEnabled(true);				
+				Role authorities = new Role();	
+				
+				//checa o tipo do usuário
+				if (authority.equals("USER")) {				
+					authorities = authoritiesService.getRoleByNome("USER");
+					List<Role> roles = new LinkedList<>();
+					roles.add(authorities);
+					user.setRoles(roles);
+					this.userService.save(user);
+					//TODO ("msg", "Usuário comum registrado com sucesso!");
+					return "/login";				
+				}
+				
+				//checa o tipo do usuário
+				if (authority.equals("LOJISTA")) {			
+					authorities = authoritiesService.getRoleByNome("STOREOWNER");
+					List<Role> roles = new LinkedList<>();
+					roles.add(authorities);
+					user.setRoles(roles);
+					this.userService.save(user);					
+					//TODO ("msg", "Usuário lojista registrado com sucesso!");
+					return "/login";				
+				}	        	
+			}else {
+				//TODO ("msgerro", "Senha não confere!");
+				return "redirect:/register";
+			}			
+			
+		}
+		return "/login";
 	}
     
 }

@@ -8,7 +8,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
@@ -17,6 +16,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+
 
 /**
  * Classe modelo de Usuário
@@ -38,18 +38,18 @@ public class Users extends AbstractModel<Long> implements UserDetails{
 	private double latitude=0;
 	private double longitude=0;
 	
-	@OneToMany(fetch=FetchType.EAGER)
+	@ManyToMany(fetch = FetchType.EAGER)
 	private List<Role> roles = new LinkedList<Role>();
 	
 	@LazyCollection(LazyCollectionOption.FALSE)
 	@JsonBackReference(value="user-friend")
 	@ManyToMany(fetch = FetchType.LAZY)
- 	private List<Users> idFriendsList = new LinkedList<Users>();
+ 	private List<Users> friendsList = new LinkedList<Users>();
 	@Column(length=255)	
 	private String name;
 	
 	public Users() {
-		this.idFriendsList = new LinkedList<Users>();
+		this.friendsList = new LinkedList<Users>();
 	}
 	
 	public Users(String username, String password, String email) {
@@ -115,53 +115,64 @@ public class Users extends AbstractModel<Long> implements UserDetails{
 	}
 
 	/**
-	 * Lista todos os ids dos amigos
-	 * @return List<Long>
+	 * Lista todos os amigos do usuario
+	 * @return List<Users> lista de amigos do usuario
 	 */
-	public List<Users> getIdFriendsList() {
-		return idFriendsList;
+	public List<Users> getFriendsList() {
+		return friendsList;
 	}
 
 	/**
-	 * Atualiza a lista de Ids de amigos
-	 * @param idFriendsList
+	 * Atualiza a lista de amigos do usuario
+	 * @param friendsList
 	 */
-	public void setIdFriendsList(List<Users> idFriendsList) {
-		this.idFriendsList = idFriendsList;
+	public void setFriendsList(List<Users> friendsList) {
+		this.friendsList = friendsList;
 	}
 	
 	/**
-	 * Adiciona um novo id de amigo
-	 * @param idFriend
+	 * Adiciona um novo amigo ao usuario
+	 * @param friend
+	 * @return true se o amigo foi adicionado com sucesso
 	 */
-	public boolean addIdFriend(Users idFriend) {
-		if (!alreadyFriend(idFriend)) {
-			this.idFriendsList.add(idFriend);	
+	public boolean addFriend(Users friend) {
+		if (!alreadyFriend(friend)) {
+			this.friendsList.add(friend);	
 			return true;
 		}else {
 			return false;
 		} 
 	}
 	
-	public boolean alreadyFriend(Users idFriend) {
+	/**
+	 * Checa se o usuario amigo já é amigo do usuario corrente
+	 * @param friend
+	 * @return true se o amigo já é amigo do usuario
+	 */
+	public boolean alreadyFriend(Users friend) {
 		//percorre a lista de amigos e checa se o amigo já está nela
-		for (Users idUser : this.idFriendsList) {
-			if (idUser.getId() == idFriend.getId()) {
+		for (Users user : this.friendsList) {
+			if (user.getId() == friend.getId()) {
 				return true;
 			}
 		}
 		return false;
 	}
 	
-	public boolean deleteFriend(Users idFriend) {		
+	/**
+	 * Dado um amigo, revove esse amigo da lista de amigos do usuario
+	 * @param friend amigo que sera removido
+	 * @return true se o amigo foi removido com sucesso
+	 */
+	public boolean deleteFriend(Users friend) {		
 		//pega a lista de amigos
-		List<Users> listaAux = this.getIdFriendsList();
+		List<Users> listaAux = this.getFriendsList();
 		int tamanhoListaAux = listaAux.size();
 		boolean achou=false;
 		//encontra o indice do usuario a ser removido
 		for (int i=0; i < tamanhoListaAux; i++) {
-			if (listaAux.get(i).getId() == idFriend.getId()) {			
-				this.idFriendsList.remove(i);
+			if (listaAux.get(i).getId() == friend.getId()) {			
+				this.friendsList.remove(i);
 				achou=true;
 				break;
 			}
@@ -169,9 +180,13 @@ public class Users extends AbstractModel<Long> implements UserDetails{
 		
 		return achou;
 	}
-	
+		
+	/**
+	 * Quantidade de amigos do usuario
+	 * @return quantidade de amigos
+	 */
 	public int getAmountOfFriends() {
-		return this.getIdFriendsList().size();
+		return this.getFriendsList().size();
 	}
 
 	public String getName() {
@@ -182,6 +197,10 @@ public class Users extends AbstractModel<Long> implements UserDetails{
 		this.name = name;
 	}
 
+	/**
+	 * Lista as permissoes do usuario
+	 * @return lista de permissoes
+	 */
 	public List<Role> getRoles() {
 		return roles;
 	}
